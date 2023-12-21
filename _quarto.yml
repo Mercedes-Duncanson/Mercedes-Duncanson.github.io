@@ -4,7 +4,7 @@ project:
 
 website:
   title: "Mercedes Duncanson"
-  favicon: images/personal_logo.png
+  favicon: images/IMG_5429.jpeg
   navbar:
     left:
       - text: Home
@@ -17,18 +17,18 @@ website:
         href: resume.qmd
     right: 
       - icon: github
-        href: https://github.com/ # change this to your github url
+        href: https://github.com/Mercedes-Duncanson # change this to your github url
       - icon: linkedin
-        href: https://www.linkedin.com # change this to your linkedin page
+        href: https://www.linkedin.com/in/mercedes-duncanson # change this to your linkedin page
       - icon: twitter
         href: https://twitter.com/ # change this to your twitter
     page-footer:
       background: light
       right: 
         - icon: github
-          href: https://github.com/
+          href: https://github.com/Mercedes-Duncanson
         - icon: linkedin
-          href: https://linkedin.com/
+          href: https://linkedin.com/mercedes-duncanson
         - icon: twitter
           href: https://twitter.com/
 

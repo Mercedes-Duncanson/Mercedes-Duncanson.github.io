@@ -1,3 +1,6 @@
 ---
 title: "Resume"
+image: images/Mercedes_Duncanson_Resume_23.jpg
+about:
+  template: marquee
 ---
