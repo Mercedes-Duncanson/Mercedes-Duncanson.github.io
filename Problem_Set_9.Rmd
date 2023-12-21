@@ -1,0 +1,188 @@
+---
+title: "Problem_Set_9"
+output: html_document
+date: "2023-12-21"
+---
+
+# Part I: Segmenting Colleges
+
+Exercise 1
+
+```{r}
+# Load libraries and data
+library(tidyverse)
+library(ggplot2)
+library(factoextra)
+library(cluster)
+college <- read.csv("Downloads/college.csv")
+```
+
+```{r}
+# Filter schools in Indiana
+indiana_colleges <- college %>%
+  filter(State == "IN")
+
+# Perform clustering
+set.seed(123)
+k <- 3
+college_clusters <- kmeans(indiana_colleges[, c("AverageFacultySalary", "AnnualTuition")], centers = k)
+
+# Visualization
+plot(indiana_colleges$AverageFacultySalary, indiana_colleges$AnnualTuition, col = college_clusters$cluster, pch = 16)
+```
+
+## **Exercise 2**
+
+```{r}
+# Use techniques to select optimal k
+set.seed(123)
+optimal_k <- fviz_nbclust(indiana_colleges[, c("AverageFacultySalary", "AnnualTuition")], kmeans, method = "wss")
+
+```
+
+## **Exercise 3**
+
+```{r}
+# Generate cluster diagrams
+set.seed(123)
+cluster_diagram_1 <- fviz_cluster(college_clusters, data = indiana_colleges)
+cluster_diagram_2 <- fviz_cluster(kmeans(indiana_colleges[, c("AverageFacultySalary", "AnnualTuition")], centers = optimal_k$ch, nstart = 25), data = indiana_colleges)
+
+#
+
+```
+
+# **Part II: Segmenting the Cereal Market**
+
+## **Exercise 4**
+
+```{r}
+# Load data and clean
+cereals <- read.csv("Downloads/college.csv") %>%
+  drop_na()
+
+# Feature selection
+cereal_features <- cereals[, !(names(cereals) %in% c("name", "mfr", "type", "weight", "shelf", "cups", "rating"))]
+
+# Determine optimal k
+set.seed(123)
+optimal_k_cereals <- fviz_nbclust(cereal_features, kmeans, method = "silhouette")
+
+```
+
+```{r}
+# Visualizations for Exercise 4
+# Silhouette plot
+silhouette_plot <- fviz_silhouette(cereal_clusters, palette = "jco")
+
+# Elbow plot
+elbow_plot <- fviz_nbclust(cereal_features, kmeans, method = "wss") +
+  ggtitle("Elbow Method") +
+  theme_minimal()
+
+# Gap statistic plot
+gap_plot <- fviz_nbclust(cereal_features, kmeans, method = "gap_stat")
+
+# Save the plots as separate files
+ggsave("silhouette_plot.png", silhouette_plot, width = 10, height = 6)
+ggsave("elbow_plot.png", elbow_plot, width = 10, height = 6)
+ggsave("gap_plot.png", gap_plot, width = 10, height = 6)
+
+```
+
+## **Exercise 5**
+
+```{r}
+# K-means clustering
+set.seed(123)
+k_cereals <- optimal_k_cereals$ch
+cereal_clusters <- kmeans(cereal_features, centers = k_cereals)
+
+# Print cluster centers
+print(cereal_clusters$centers)
+
+# Create a new column for cluster
+cereals$cluster <- cereal_clusters$cluster
+
+# Plot cluster centers in sugars-calories space
+ggplot(cereals, aes(x = sugars, y = calories, color = factor(cluster))) +
+  geom_point() +
+  geom_point(data = as.data.frame(cereal_clusters$centers), aes(x = sugars, y = calories), color = "black", size = 3, shape = 3)
+
+```
+
+## **Exercise 6**
+
+```{r}
+# Assign intuitive names to clusters
+cereals$cluster_name <- cut(cereals$cluster, breaks = c(0, 1, 2, 3), labels = c("Cluster 1", "Cluster 2", "Cluster 3"))
+
+```
+
+# **Part III: Segmenting Bathsoap Customers**
+
+## **Exercise 7**
+
+```{r}
+# Load data and scale
+soap <- read.csv("Downloads/BathSoapHousehold.csv")
+scaled_soap <- scale(soap[, c("CHILD", "AffluenceIndex")])
+
+# Determine optimal k
+set.seed(123)
+optimal_k_soap <- fviz_nbclust(scaled_soap, kmeans, method = "gap_stat")
+
+```
+
+```{r}
+# Visualizations for Exercise 7
+
+# Silhouette plot
+silhouette_plot_soap <- fviz_silhouette(soap_clusters, palette = "jco")
+
+# Elbow plot
+elbow_plot_soap <- fviz_nbclust(scaled_soap, kmeans, method = "wss") +
+  ggtitle("Elbow Method") +
+  theme_minimal()
+
+# Gap statistic plot
+gap_plot_soap <- fviz_nbclust(scaled_soap, kmeans, method = "gap_stat")
+
+# Save the plots as separate files
+ggsave("silhouette_plot_soap.png", silhouette_plot_soap, width = 10, height = 6)
+ggsave("elbow_plot_soap.png", elbow_plot_soap, width = 10, height = 6)
+ggsave("gap_plot_soap.png", gap_plot_soap, width = 10, height = 6)
+
+```
+
+## **Exercise 8**
+
+```{r}
+# Visualize clusters with business-intuitive descriptions
+set.seed(123)
+k_soap <- optimal_k_soap$gap_stat[which.max(optimal_k_soap$gap_stat$gap), "cluster"]
+soap_clusters <- kmeans(scaled_soap, centers = k_soap)
+
+fviz_cluster(list(data = scaled_soap, cluster = soap_clusters$cluster), geom = c("point"))
+
+```
+
+## **Exercise 9**
+
+```{r}
+# Create a table of average Value and Total Volume
+soap %>%
+  mutate(cluster = soap_clusters$cluster) %>%
+  group_by(cluster) %>%
+  summarise_at(vars(Value, `Total Volume`), funs(mean))
+
+```
+
+```{r}
+# Determine highest average Value and largest Total Volume clusters
+highest_value_cluster <- which.max(soap_clusters$centers$Value)
+largest_volume_cluster <- which.max(soap_clusters$centers$`Total Volume`)
+
+#
+
+```

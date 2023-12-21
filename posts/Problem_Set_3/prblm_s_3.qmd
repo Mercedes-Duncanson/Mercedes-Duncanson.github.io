@@ -1,0 +1,85 @@
+---
+title: "Corolla Pricing Model"
+format: html
+editor: visual
+---
+
+### Required Installations
+
+After exporting this document, please remember to ensure the following packages are installed on your computer. Then you erase this content from your document/assignment.
+
+-   rmarkdown
+
+-   tidyverse
+
+-   rpart, rpart.plot
+
+-   caret
+
+-   gamlr
+
+------------------------------------------------------------------------
+
+```{r}
+#| message: false
+library(tidyverse)
+library(rpart)
+library(caret)
+library(GGally)
+```
+
+## Read in and Prepare Data
+
+```{r}
+cars = read_csv("ToyotaCorolla.csv")
+glimpse(cars)
+```
+
+```{r}
+cars = cars %>%
+  select(-Id, -Model, -Mfg_Month, -Cylinders)
+```
+
+Important Features
+
+mileage (kilometers)
+
+year/age
+
+wear and tear
+
+clean title
+
+damage/condition
+
+AWD/FWD/RWD
+
+color
+
+Fuel Type
+
+```{r}
+cars_fct = cars %>%
+  select(-Price, -Age_08_04, -KM, -HP, -CC, -Quarterly_Tax, -Weight) %>%
+  mutate_all(.funs = factor)
+
+cars_num = cars %>%
+  select(Price, Age_08_04, KM, HP, CC, Quarterly_Tax, Weight)
+
+cars2 = bind_cols(cars_num, cars_fct)
+```
+
+```{r}
+#| message: false
+cars2 %>%
+  keep(is.numeric) %>%
+  ggpairs()
+```
+
+kitchen sink model below
+
+```{r}
+lm1 = lm(Price ~ Age_08_04 + KM,
+         data = cars2)
+summary(lm1)
+```

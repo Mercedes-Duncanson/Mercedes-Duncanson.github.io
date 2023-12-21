@@ -1,11 +1,9 @@
 ---
-title: "Problem_Set_3_QD"
-format: html
-editor: visual
+title: "Problem_Set_3"
+output: html_document
+date: '2023-09-26'
 ---
-
-1)  
-
+1)
 ```{r}
 # Load necessary libraries
 library(dplyr)
@@ -28,10 +26,9 @@ corolla_data = read_csv("/Users/mercedesduncanson/Downloads/Repos/Problem_Set_3/
 str(corolla_data)
 summary(corolla_data)
 glimpse(cars)
+
 ```
-
-2)  
-
+2)
 ```{r}
 # Check for missing values
 missing_values <- colSums(is.na(corolla_data))
@@ -47,9 +44,7 @@ if (sum(is.na(corolla_data$Price)) > 0) {
   cat("No missing values in Price column.\n")
 }
 ```
-
-3)  
-
+3)
 ```{r}
 # Check Price variable distribution
 hist(corolla_data$Price)
@@ -57,11 +52,10 @@ hist(corolla_data$Price)
 # Consider transformations if necessary (e.g., log transformation)
 corolla_data$LogPrice <- log(corolla_data$Price)
 hist(corolla_data$LogPrice)
+
 ```
-
-4)  
-
-```{r}
+4)
+```{r} 
 #| message: false
 # create correlation matrix to identify potential relationships, also I know I did it 2 times, it was to test another method vs the code we used in class.
 corolla_data = corolla_data %>%
@@ -79,12 +73,11 @@ cars2 = bind_cols(cars_num, cars_fct)
 cars2 %>%
   keep(is.numeric) %>%
   ggpairs()
-```
 
+```
 We can see that there is a negative linear relationship with price and age, also price and KM. There is a positive linear relationship between age and KM.
 
-5)  
-
+5)
 ```{r}
 # Calculate correlation matrix
 correlation_matrix <- cor(corolla_data[, c("Age_08_04", "KM", "HP", "CC", "Quarterly_Tax", "Weight", "Mfg_Year")])
@@ -100,12 +93,11 @@ ggplot(data = melted_correlation, aes(x = Var1, y = Var2, fill = value)) +
   scale_fill_gradient(low = "blue", high = "red") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
 ```
+When looking at the heat map we can see that the highest positive correlations are between, weight and quarterly_tax, age and KM, and Mfg_Year, and weight,  none of their numbers are concerning though since they're not above 0.7 so they should all still be included. The highest negative correlation that we can see is between Mfg_Year and Age_08_04, this is because these are ecnetially the same thing, manufacturing year and the cars "age" are most often only months apart aand are definetly seen as the same thing. I would suggest removing Mfg_Year and using Age_08_04, since this would be the date the cars are available for sale. Mfg_Year does get removed in the next few steps.
 
-When looking at the heat map we can see that the highest positive correlations are between, weight and quarterly_tax, age and KM, and Mfg_Year, and weight, none of their numbers are concerning though since they're not above 0.7 so they should all still be included. The highest negative correlation that we can see is between Mfg_Year and Age_08_04, this is because these are ecnetially the same thing, manufacturing year and the cars "age" are most often only months apart aand are definetly seen as the same thing. I would suggest removing Mfg_Year and using Age_08_04, since this would be the date the cars are available for sale. Mfg_Year does get removed in the next few steps.
-
-6)  
-
+6)
 ```{r}
 # Set a random seed for reproducibility
 set.seed(123)
@@ -121,8 +113,7 @@ train_data <- corolla_data[train_indices, ]
 test_data <- corolla_data[-train_indices, ]
 ```
 
-7)  
-
+7)
 ```{r}
 # Train a regression tree model
 model <- rpart(Price ~ ., data = train_data)
@@ -137,12 +128,12 @@ pruned_model <- prune(model, cp = best_cp)
 
 # Visualize the pruned tree
 rpart.plot(pruned_model, extra = 101)
-```
 
+
+```
 This assignment primarily emphasizes post-pruning through cross-validation to optimize the regression tree model's complexity and ensure that it generalizes well to new data. Pre-pruning techniques, such as setting constraints during tree construction, are not done or needed with this model.
 
-8)  
-
+8)
 ```{r}
 # Train the regression tree model again
 model_selected <- rpart(Price ~ ., data = train_data)
@@ -152,10 +143,10 @@ var_importance <- varImp(model_selected)
 
 # Print the variable importance scores
 print(var_importance)
+
 ```
 
-9)  
-
+9)
 ```{r}
 # Remove less important features by only selecting the most important ones
 selected_features <- c("LogPrice", "Weight", "Age_08_04")
@@ -164,12 +155,11 @@ test_data_selected <- test_data[, c(selected_features, "Price")]
 
 # Retrain the pruned model
 model_selected <- rpart(Price ~ ., data = train_data_selected)
-```
 
+```
 Using the information we've gathered from the steps above, we can tell that Price, Weight, and Age, are the most important features that we can use to measure the cars. By selecting just these ones we simplifying our data while keeping it accurate and relavent to what our needs are/what's important to buyers.
 
-10) 
-
+10)
 ```{r}
 # Make predictions on the test data
 predictions <- predict(model_selected, newdata = test_data_selected)
@@ -184,5 +174,5 @@ rmse
 # Access the RMSE for different values of cp from the cv_model (gives a vector of RMSE values for each tested value of cp)
 cv_model$results$RMSE
 ```
-
 the rmse (863.13r), is similar the lowest two cp values, 737.45r and 912.43r. Aside from those 2, the rmse get lower and lower the further down the decision tree we test, this can mean that there are some further measures we could take to better train our model, but it still can perform decently on testing data.
+
